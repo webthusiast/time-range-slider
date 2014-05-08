@@ -1,0 +1,308 @@
+<template>
+	<div>
+		<div>
+			<div></div>
+			<div></div>
+			<content>
+		</div>
+	</div>
+</template>
+
+<!-- a single-range slider -->
+<script type="text/javascript">
+	'use strict';
+
+	// TODO: web-component styling (currently, Element.style property is used)
+	// TODO: allow disabling the inputs
+	// TODO: allow multiple ranges (a multi-range-slider)
+	// TODO: allow different value-formats
+	// TODO: add tooltip
+
+	// create a local scope
+	(function() {
+		var template = document._currentScript.ownerDocument.querySelector('template');
+
+		var rangeSliderPrototype = Object.create(HTMLElement.prototype, {
+
+			// Event handlers
+			createdCallback: {
+				value: function() {
+					this._shadowRoot = this.createShadowRoot();
+					this._shadowRoot.appendChild(document.importNode(template.content, true));
+					this.setStyle();
+					this.addEventListener('change', this.inputChangedCallback);
+					this.range.addEventListener('mousedown', this.slideListener);
+					this.leftHandle.addEventListener('mousedown', this.slideListener);
+					this.rightHandle.addEventListener('mousedown', this.slideListener);
+				}
+			},
+
+			attributeChangedCallback: {
+				value: function(attrName, oldVal, newVal) {
+					switch (attrName) {
+					case 'min':
+					case 'max':
+						this.setPositioning();
+						break;
+					}
+				}
+			},
+
+			inputChangedCallback: {
+				value: function(e) {
+					this.setPositioning();
+				}
+			},
+
+			slideListener: {
+				get: function() {
+					var timeRangeSlider = this;
+					return {
+						handleEvent: function(e) {
+							switch (e.type) {
+							case 'mousedown':
+							case 'touchstart':
+								return this.handleDragStartEvent(e);
+							case 'mousemove':
+							case 'touchmove':
+								return this.handleMoveEvent(e);
+							case 'mouseup':
+							case 'touchend':
+								return this.handleDragEndEvent(e);
+							default: return;
+							}
+						},
+
+						handleDragStartEvent: function(e) {
+							switch (e.type) {
+							case 'mousedown':
+								this.moveEventType = 'mousemove';
+								this.dragendEventType = 'mouseup';
+								this.startPageX = e.pageX
+								break;
+							case 'touchstart':
+								this.moveEventType = 'touchmove';
+								this.dragendEventType = 'touchend';
+								this.startPageX = e.touches[0].pageX
+								break;
+							default: return;
+							}
+							e.preventDefault();
+							e.stopPropagation();
+							this.target = e.target;
+							this.startOffsetLeft = timeRangeSlider.range.offsetLeft;
+							this.startClientWidth = timeRangeSlider.range.clientWidth;
+							document.addEventListener(this.moveEventType, this);
+							document.addEventListener(this.dragendEventType, this);
+						},
+
+						handleMoveEvent: function(e) {
+							var pageX = null;
+							switch (e.type) {
+							case 'mousemove':
+								pageX = e.pageX
+								break;
+							case 'touchmove':
+								pageX = e.touches[0].pageX
+								break;
+							default: return;
+							}
+							e.preventDefault();
+							e.stopPropagation();
+							var dx = pageX - this.startPageX;
+							var containerWidth = timeRangeSlider.rangeContainer.clientWidth;
+							var minValue = timeRangeSlider.minValue;
+							var maxValue = timeRangeSlider.maxValue;
+							switch (this.target) {
+							case timeRangeSlider.range:
+								var offsetLeft = this.startOffsetLeft + dx;
+								offsetLeft = Math.max(offsetLeft, 0);
+								offsetLeft = Math.min(offsetLeft, containerWidth - this.startClientWidth);
+								var offsetRight = this.startOffsetLeft + this.startClientWidth + dx;
+								offsetRight = Math.max(offsetRight, this.startClientWidth);
+								var startValue = minValue + (maxValue - minValue) * offsetLeft / containerWidth;
+								var endValue = minValue + (maxValue - minValue) * (offsetLeft + this.startClientWidth) / containerWidth;
+								timeRangeSlider.startInput.value = timeRangeSlider.formatTime(startValue);
+								timeRangeSlider.endInput.value = timeRangeSlider.formatTime(endValue);
+								break;
+							case timeRangeSlider.leftHandle:
+								var offsetLeft = this.startOffsetLeft + dx;
+								var startValue = minValue + (maxValue - minValue) * offsetLeft / containerWidth;
+								timeRangeSlider.startInput.value = timeRangeSlider.formatTime(startValue);
+								break;
+							case timeRangeSlider.rightHandle:
+								var offsetRight = this.startOffsetLeft + this.startClientWidth + dx;
+								var endValue = minValue + (maxValue - minValue) * offsetRight / containerWidth;
+								timeRangeSlider.endInput.value = timeRangeSlider.formatTime(endValue);
+								break;
+							}
+							timeRangeSlider.setPositioning();
+						},
+
+						handleDragEndEvent: function(e) {
+							switch (e.type) {
+							case 'mouseup':
+							case 'touchend':
+								break;
+							default: return;
+							}
+							e.preventDefault();
+							e.stopPropagation();
+							document.removeEventListener(this.moveEventType, this);
+							document.removeEventListener(this.dragendEventType, this);
+						},
+					}
+				}
+			},
+
+			// Properties
+
+			rangeContainer: {
+				get: function() { return this._shadowRoot.children[0]; }
+			},
+
+			range: {
+				get: function() { return this.rangeContainer.children[0]; }
+			},
+
+			handles: {
+				get: function() { return this.range.querySelectorAll('div'); }
+			},
+
+			leftHandle: {
+				get: function() { return this.handles[0]; }
+			},
+
+			rightHandle: {
+				get: function() { return this.handles[1]; }
+			},
+
+			minValue: {
+				get: function() {
+					var result = this.parseTime(this.getAttribute('min'));
+					return result === null ? 0 : result;
+				}
+			},
+
+			maxValue: {
+				get: function() {
+					var result = this.parseTime(this.getAttribute('max'));
+					return result === null ? 24 * 60 : result;
+				}
+			},
+
+			startValue: {
+				get: function() { return this.parseTime(this.startInput.value); }
+			},
+
+			endValue: {
+				get: function() { return this.parseTime(this.endInput.value); }
+			},
+
+			inputs: {
+				get: function() { return this.querySelectorAll('input'); }
+			},
+
+			startInput: {
+				get: function() { return this.inputs[0]; }
+			},
+
+			endInput: {
+				get: function() { return this.inputs[1]; }
+			},
+
+			startPercentage: {
+				get: function() {
+					return 100 * (this.startValue - this.minValue) / (this.maxValue - this.minValue);
+				}
+			},
+
+			endPercentage: {
+				get: function() {
+					return 100 * (this.endValue - this.minValue) / (this.maxValue - this.minValue);
+				}
+			},
+
+			color: {
+				get: function() { return this.getAttribute('color'); }
+			},
+
+			borderColor: {
+				get: function() { return this.getAttribute('border-color'); }
+			},
+
+			borderRadius: {
+				get: function() { return this.getAttribute('border-radius'); }
+			},
+
+			// Commands
+
+			setStyle: {
+				value: function() {
+					// put styles on the element themselves, because style scoping through shadowDOM doesn't work yet
+					for (var i = 0, input; input = this.inputs[i]; i ++) {
+						input.style.display = 'none';
+					}
+
+					this.rangeContainer.style.border = '1px solid ' + (this.borderColor || 'silver');
+					this.rangeContainer.style.borderRadius = this.borderRadius;
+					this.rangeContainer.style.position = 'relative';
+
+					this.range.style.position = 'relative';
+					this.range.style.backgroundColor = this.color || 'gray';
+					this.range.style.borderRadius = this.borderRadius;
+					this.range.style.height = '1em';
+					this.setPositioning()
+
+					for (var i = 0, handle; handle = this.handles[i]; i ++) {
+						handle.style.position = 'relative';
+						handle.style.height = '1em';
+						handle.style.width = '1em';
+						handle.style.opacity = '.001';
+					}
+					this.leftHandle.style.float = 'left';
+					this.rightHandle.style.float = 'right';
+					this.leftHandle.style.left = '-.5em';
+					this.rightHandle.style.left = '.5em';
+				}
+			},
+
+			setPositioning: {
+				value: function() {
+					this.range.style.left = this.startPercentage + '%';
+					this.range.style.width = (this.endPercentage - this.startPercentage) + '%';
+				}
+			},
+
+			// Utilities
+
+			formatTime: {
+				value: function(timeInt) {
+					var result = '';
+					timeInt = Math.floor(timeInt);
+					while (0 < timeInt) {
+						result = ('0' + (timeInt % 60)).slice(-2) + ':' + result;
+						timeInt = Math.floor(timeInt / 60);
+					}
+					return result.replace(/^0/, '').replace(/:$/, '');
+				}
+			},
+
+			parseTime: {
+				value: function(timeString) {
+					var result = 0;
+					timeString.split(':').forEach(function(x) {
+						result *= 60;
+						result += parseInt(x) || 0;
+					});
+					return result;
+				}
+			},
+
+		});
+
+		var RangeSlider = document.registerElement('time-range-slider', {
+			prototype: rangeSliderPrototype,
+		});
+	})();
+</script>

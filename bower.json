@@ -1,0 +1,22 @@
+{
+  "name": "time-range-slider",
+  "version": "1.0.0",
+  "homepage": "https://github.com/webthusiast/time-range-slider",
+  "authors": [
+    "Roald de Vries <roald@webthusaist.nl>"
+  ],
+  "description": "a web component for time range inputs",
+  "main": "time-range-slider.html",
+  "keywords": [
+    "web",
+    "components",
+    "time",
+    "range",
+    "slider",
+    "polymer"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.2.3"
+  }
+}
