@@ -3,7 +3,7 @@
 		<div>
 			<div></div>
 			<div></div>
-			<content>
+			<content></content>
 		</div>
 	</div>
 </template>
@@ -22,7 +22,7 @@
 	(function() {
 		var template = document._currentScript.ownerDocument.querySelector('template');
 
-		var rangeSliderPrototype = Object.create(HTMLElement.prototype, {
+		var timeRangeSliderPrototype = Object.create(HTMLElement.prototype, {
 
 			// Event handlers
 			createdCallback: {
@@ -150,6 +150,7 @@
 							e.stopPropagation();
 							document.removeEventListener(this.moveEventType, this);
 							document.removeEventListener(this.dragendEventType, this);
+							timeRangeSlider.dispatchEvent(new CustomEvent('changed', {bubbles: true, cancelable: true}));
 						},
 					}
 				}
@@ -301,8 +302,8 @@
 
 		});
 
-		var RangeSlider = document.registerElement('time-range-slider', {
-			prototype: rangeSliderPrototype,
+		var TimeRangeSlider = document.registerElement('time-range-slider', {
+			prototype: timeRangeSliderPrototype,
 		});
 	})();
 </script>
