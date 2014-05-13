@@ -57,6 +57,9 @@
 			slideListener: {
 				get: function() {
 					var timeRangeSlider = this;
+					var changingEvent = new CustomEvent('changing', {bubbles: true, cancelable: true});
+					var changedEvent = new CustomEvent('changed', {bubbles: true, cancelable: true});
+
 					return {
 						handleEvent: function(e) {
 							switch (e.type) {
@@ -137,6 +140,7 @@
 								break;
 							}
 							timeRangeSlider.setPositioning();
+							timeRangeSlider.dispatchEvent(changingEvent);
 						},
 
 						handleDragEndEvent: function(e) {
@@ -150,7 +154,7 @@
 							e.stopPropagation();
 							document.removeEventListener(this.moveEventType, this);
 							document.removeEventListener(this.dragendEventType, this);
-							timeRangeSlider.dispatchEvent(new CustomEvent('changed', {bubbles: true, cancelable: true}));
+							timeRangeSlider.dispatchEvent(changedEvent);
 						},
 					}
 				}
