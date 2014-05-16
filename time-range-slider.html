@@ -31,6 +31,9 @@
 					this._shadowRoot.appendChild(document.importNode(template.content, true));
 					this.setStyle();
 					this.addEventListener('change', this.inputChangedCallback);
+					this.range.addEventListener('touchstart', this.slideListener);
+					this.leftHandle.addEventListener('touchstart', this.slideListener);
+					this.rightHandle.addEventListener('touchstart', this.slideListener);
 					this.range.addEventListener('mousedown', this.slideListener);
 					this.leftHandle.addEventListener('mousedown', this.slideListener);
 					this.rightHandle.addEventListener('mousedown', this.slideListener);
