@@ -133,11 +133,15 @@
 								break;
 							case timeRangeSlider.leftHandle:
 								var offsetLeft = this.startOffsetLeft + dx;
+								offsetLeft = Math.max(offsetLeft, 0);
+								offsetLeft = Math.min(offsetLeft, this.startOffsetLeft + this.startClientWidth);
 								var startValue = minValue + (maxValue - minValue) * offsetLeft / containerWidth;
 								timeRangeSlider.startInput.value = timeRangeSlider.formatTime(startValue);
 								break;
 							case timeRangeSlider.rightHandle:
 								var offsetRight = this.startOffsetLeft + this.startClientWidth + dx;
+								offsetRight = Math.max(offsetRight, this.startOffsetLeft);
+								offsetRight = Math.min(offsetRight, containerWidth);
 								var endValue = minValue + (maxValue - minValue) * offsetRight / containerWidth;
 								timeRangeSlider.endInput.value = timeRangeSlider.formatTime(endValue);
 								break;
