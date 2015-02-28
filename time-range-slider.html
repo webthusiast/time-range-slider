@@ -1,8 +1,14 @@
-<template>
-	<div>
-		<div>
-			<div></div>
-			<div></div>
+<template class="ruler">
+	<div range-container-wrapper>
+		<div range-container><content></content></div>
+	</div>
+</template>
+
+<template class="slider">
+	<div range-container>
+		<div range>
+			<div left-handle></div>
+			<div right-handle></div>
 			<content></content>
 		</div>
 	</div>
@@ -20,15 +26,138 @@
 
 	// create a local scope
 	(function() {
-		var template = document._currentScript.ownerDocument.querySelector('template');
+		var rulerTemplate = document._currentScript.ownerDocument.querySelector('template.ruler');
+		var sliderTemplate = document._currentScript.ownerDocument.querySelector('template.slider');
 
-		var timeRangeSliderPrototype = Object.create(HTMLElement.prototype, {
+		var timeRangePrototype = Object.create(HTMLElement.prototype, {
+
+			// Properties
+
+			rangeContainer: {
+				get: function() { return this._shadowRoot.querySelector('[range-container]'); }
+			},
+
+			minValue: {
+				get: function() {
+					var result = this.parseTime(this.getAttribute('min'));
+					return result === null ? 0 : result;
+				}
+			},
+
+			maxValue: {
+				get: function() {
+					var result = this.parseTime(this.getAttribute('max'));
+					return result === null ? 24 * 60 : result;
+				}
+			},
+
+			borderColor: {
+				get: function() { return this.getAttribute('border-color'); }
+			},
+
+			borderRadius: {
+				get: function() { return this.getAttribute('border-radius'); }
+			},
+
+			// Utilities
+
+			formatTime: {
+				value: function(timeInt) {
+					var result = '';
+					timeInt = Math.floor(timeInt);
+					while (0 < timeInt) {
+						result = ('0' + (timeInt % 60)).slice(-2) + ':' + result;
+						timeInt = Math.floor(timeInt / 60);
+					}
+					return result.replace(/^0/, '').replace(/:$/, '');
+				}
+			},
+
+			parseTime: {
+				value: function(timeString) {
+					var result = 0;
+					timeString.split(':').forEach(function(x) {
+						result *= 60;
+						result += parseInt(x) || 0;
+					});
+					return result;
+				}
+			},
+
+		});
+
+		var timeRangeRulerPrototype = Object.create(timeRangePrototype, {
+
+			createdCallback: {
+				value: function() {
+					this._shadowRoot = this.createShadowRoot();
+					this._shadowRoot.appendChild(document.importNode(rulerTemplate.content, true));
+					var startMinutes = this.minValue;
+					for (var h = this.firstHour; h <= this.lastHour; h ++) {
+						var el = document.createElement('div');
+						el.style.height = '.5em';
+						var subel = document.createElement('div');
+						subel.innerHTML = ('0' + h).slice(-2);
+						subel.style.width = '0';
+						subel.style.position = 'relative';
+						subel.style.top = '-1em';
+						subel.style.left = '-.5em';
+						subel.style.textAlign = 'center';
+						el.appendChild(subel);
+						this.rangeContainer.appendChild(el);
+						var self = this;
+						[.25, .5, .25].forEach(function(em) {
+							var el = document.createElement('div');
+							el.style.height = em + 'em';
+							self.rangeContainer.appendChild(el);
+						});
+					}
+					this.setStyle();
+				}
+			},
+
+			// Properties
+
+			rangeContainerWrapper: {
+				get: function() { return this._shadowRoot.querySelector('[range-container-wrapper]'); }
+			},
+
+			firstHour: {
+				get: function() { return parseInt(Math.floor(this.minValue / 60)); }
+			},
+
+			lastHour: {
+				get: function() { return parseInt(Math.ceil(this.maxValue / 60)); }
+			},
+
+			// Commands
+
+			setStyle: {
+				value: function() {
+					// put styles on the element themselves, because style scoping through shadowDOM doesn't work yet
+					this.rangeContainerWrapper.style.paddingTop = '1em';
+					this.rangeContainer.style.width = (100 * (this.lastHour + 1 - this.firstHour) * 60 / (this.maxValue - this.minValue)) + '%';
+					this.rangeContainer.style.position = 'relative';
+					this.rangeContainer.style.left = (100 * (this.firstHour * 60 - this.minValue) / (this.maxValue - this.minValue)) + '%';
+					this.rangeContainer.style.display = 'flex';
+					this.rangeContainer.style.alignItems = 'flex-end';
+					var self = this;
+					Array.prototype.forEach.call(this.rangeContainer.children, function(child) {
+						child.style.borderLeft = '1px solid ' + self.borderColor;
+						child.style.flexGrow = '1';
+					});
+				}
+			},
+
+		});
+
+		var timeRangeSliderPrototype = Object.create(timeRangePrototype, {
 
 			// Event handlers
 			createdCallback: {
 				value: function() {
 					this._shadowRoot = this.createShadowRoot();
-					this._shadowRoot.appendChild(document.importNode(template.content, true));
+					this._shadowRoot.appendChild(document.importNode(sliderTemplate.content, true));
 					this.setStyle();
 					this.addEventListener('change', this.inputChangedCallback);
 					this.range.addEventListener('touchstart', this.slideListener);
@@ -169,10 +298,6 @@
 
 			// Properties
 
-			rangeContainer: {
-				get: function() { return this._shadowRoot.children[0]; }
-			},
-
 			range: {
 				get: function() { return this.rangeContainer.children[0]; }
 			},
@@ -187,20 +312,6 @@
 
 			rightHandle: {
 				get: function() { return this.handles[1]; }
-			},
-
-			minValue: {
-				get: function() {
-					var result = this.parseTime(this.getAttribute('min'));
-					return result === null ? 0 : result;
-				}
-			},
-
-			maxValue: {
-				get: function() {
-					var result = this.parseTime(this.getAttribute('max'));
-					return result === null ? 24 * 60 : result;
-				}
 			},
 
 			startValue: {
@@ -237,14 +348,6 @@
 
 			color: {
 				get: function() { return this.getAttribute('color'); }
-			},
-
-			borderColor: {
-				get: function() { return this.getAttribute('border-color'); }
-			},
-
-			borderRadius: {
-				get: function() { return this.getAttribute('border-radius'); }
 			},
 
 			// Commands
@@ -286,31 +389,10 @@
 				}
 			},
 
-			// Utilities
+		});
 
-			formatTime: {
-				value: function(timeInt) {
-					var result = '';
-					timeInt = Math.floor(timeInt);
-					while (0 < timeInt) {
-						result = ('0' + (timeInt % 60)).slice(-2) + ':' + result;
-						timeInt = Math.floor(timeInt / 60);
-					}
-					return result.replace(/^0/, '').replace(/:$/, '');
-				}
-			},
-
-			parseTime: {
-				value: function(timeString) {
-					var result = 0;
-					timeString.split(':').forEach(function(x) {
-						result *= 60;
-						result += parseInt(x) || 0;
-					});
-					return result;
-				}
-			},
-
+		var TimeRangeRuler = document.registerElement('time-range-ruler', {
+			prototype: timeRangeRulerPrototype,
 		});
 
 		var TimeRangeSlider = document.registerElement('time-range-slider', {
