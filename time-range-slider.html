@@ -92,7 +92,6 @@
 				value: function() {
 					this._shadowRoot = this.createShadowRoot();
 					this._shadowRoot.appendChild(document.importNode(rulerTemplate.content, true));
-					var startMinutes = this.minValue;
 					for (var h = this.firstHour; h <= this.lastHour; h ++) {
 						var el = document.createElement('div');
 						el.style.height = '.5em';
@@ -142,9 +141,12 @@
 					this.rangeContainer.style.display = 'flex';
 					this.rangeContainer.style.alignItems = 'flex-end';
 					var self = this;
-					Array.prototype.forEach.call(this.rangeContainer.children, function(child) {
+					Array.prototype.forEach.call(this.rangeContainer.children, function(child, i) {
 						child.style.borderLeft = '1px solid ' + self.borderColor;
 						child.style.flexGrow = '1';
+						var beforeMinValue = 60 * self.firstHour + 15 * (i - 1) < self.minValue;
+						var afterMaxValue = self.maxValue < 60 * self.firstHour + 15 * (i - 1);
+						if (beforeMinValue || afterMaxValue) child.style.visibility = 'hidden';
 					});
 				}
 			},
