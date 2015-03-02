@@ -2,5 +2,6 @@
 .DS_Store
 /.vimproject
 /Session.vim
-/node_modules/
 /bower_components/
+/node_modules/
+/time-range-slider-*.tgz
