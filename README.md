@@ -23,4 +23,10 @@ And include like this:
 
 For more details, see [the demo][].
 
+Caveats
+-------
+
+- To programmatically change the values of the inputs, use e.g. `slider.startValue = slider.parseTime('11:00')`. See [issue 3][] for more details.
+
 [the demo]: http://localhost:8000/demo/
+[issue 3]: https://github.com/webthusiast/time-range-slider/issues/3

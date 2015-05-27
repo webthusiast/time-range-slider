@@ -308,11 +308,19 @@ include(`time-range-slider.css')
 			},
 
 			startValue: {
-				get: function() { return this.parseTime(this.startInput.value); }
+				get: function() { return this.parseTime(this.startInput.value); },
+				set: function(value) {
+					this.startInput.value = this.formatTime(value);
+					this.setPositioning();
+				}
 			},
 
 			endValue: {
-				get: function() { return this.parseTime(this.endInput.value); }
+				get: function() { return this.parseTime(this.endInput.value); },
+				set: function(value) {
+					this.endInput.value = this.formatTime(value);
+					this.setPositioning();
+				}
 			},
 
 			inputs: {
