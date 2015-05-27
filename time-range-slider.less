@@ -1,0 +1,67 @@
+time-range-ruler > [range-container-wrapper] {
+	padding-top: 1em;
+
+	> [range-container] {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+
+		> * {
+			flex-grow: 1;
+			border-left-width: 1px;
+			border-left-style: solid;
+
+			&:nth-child(odd) {
+				height: .5em;
+			}
+
+			&:nth-child(even) {
+				height: .25em;
+			}
+
+			> * {
+				width: 0;
+				position: relative;
+				top: -1em;
+				left: -.5em;
+				text-align: center;
+			}
+		}
+	}
+}
+
+time-range-slider {
+	height: .5em;
+
+	input {
+		display: none;
+	}
+
+	> [range-container] {
+		position: relative;
+		border-width: 1px;
+		border-style: solid;
+
+		[range] {
+			position: relative;
+			height: 1em;
+
+			.handle(@float, @left) {
+				position: relative;
+				height: 1em;
+				width: 1em;
+				opacity: .001;
+				float: @float;
+				left: @left;
+			}
+
+			[left-handle] {
+				.handle(left, -.5em);
+			}
+
+			[right-handle] {
+				.handle(right, .5em);
+			}
+		}
+	}
+}

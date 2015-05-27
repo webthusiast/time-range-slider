@@ -1,3 +1,7 @@
+<style>
+include(`time-range-slider.css')
+</style>
+
 <template class="ruler">
 	<div range-container-wrapper>
 		<div range-container><content></content></div>
@@ -94,20 +98,13 @@
 					this._shadowRoot.appendChild(document.importNode(rulerTemplate.content, true));
 					for (var h = this.firstHour; h <= this.lastHour; h ++) {
 						var el = document.createElement('div');
-						el.style.height = '.5em';
 						var subel = document.createElement('div');
 						subel.innerHTML = ('0' + h).slice(-2);
-						subel.style.width = '0';
-						subel.style.position = 'relative';
-						subel.style.top = '-1em';
-						subel.style.left = '-.5em';
-						subel.style.textAlign = 'center';
 						el.appendChild(subel);
 						this.rangeContainer.appendChild(el);
 						var self = this;
 						[.25, .5, .25].forEach(function(em) {
 							var el = document.createElement('div');
-							el.style.height = em + 'em';
 							self.rangeContainer.appendChild(el);
 						});
 					}
@@ -133,17 +130,11 @@
 
 			setStyle: {
 				value: function() {
-					// put styles on the element themselves, because style scoping through shadowDOM doesn't work yet
-					this.rangeContainerWrapper.style.paddingTop = '1em';
 					this.rangeContainer.style.width = (100 * (this.lastHour + 1 - this.firstHour) * 60 / (this.maxValue - this.minValue)) + '%';
-					this.rangeContainer.style.position = 'relative';
 					this.rangeContainer.style.left = (100 * (this.firstHour * 60 - this.minValue) / (this.maxValue - this.minValue)) + '%';
-					this.rangeContainer.style.display = 'flex';
-					this.rangeContainer.style.alignItems = 'flex-end';
 					var self = this;
 					Array.prototype.forEach.call(this.rangeContainer.children, function(child, i) {
-						child.style.borderLeft = '1px solid ' + self.borderColor;
-						child.style.flexGrow = '1';
+						child.style.borderLeftColor = self.borderColor;
 						var beforeMinValue = 60 * self.firstHour + 15 * (i - 1) < self.minValue;
 						var afterMaxValue = self.maxValue < 60 * self.firstHour + 15 * (i - 1);
 						if (beforeMinValue || afterMaxValue) child.style.visibility = 'hidden';
@@ -356,31 +347,12 @@
 
 			setStyle: {
 				value: function() {
-					// put styles on the element themselves, because style scoping through shadowDOM doesn't work yet
-					for (var i = 0, input; input = this.inputs[i]; i ++) {
-						input.style.display = 'none';
-					}
-
-					this.rangeContainer.style.border = '1px solid ' + (this.borderColor || 'silver');
+					this.rangeContainer.style.borderColor = this.borderColor || 'silver';
 					this.rangeContainer.style.borderRadius = this.borderRadius;
-					this.rangeContainer.style.position = 'relative';
 
-					this.range.style.position = 'relative';
 					this.range.style.backgroundColor = this.color || 'gray';
 					this.range.style.borderRadius = this.borderRadius;
-					this.range.style.height = '1em';
 					this.setPositioning()
-
-					for (var i = 0, handle; handle = this.handles[i]; i ++) {
-						handle.style.position = 'relative';
-						handle.style.height = '1em';
-						handle.style.width = '1em';
-						handle.style.opacity = '.001';
-					}
-					this.leftHandle.style.float = 'left';
-					this.rightHandle.style.float = 'right';
-					this.leftHandle.style.left = '-.5em';
-					this.rightHandle.style.left = '.5em';
 				}
 			},
 

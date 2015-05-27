@@ -5,6 +5,7 @@
   "main": "time-range-slider.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "make",
     "start": "python -m SimpleHTTPServer"
   },
   "keywords": [
@@ -19,6 +20,8 @@
   "author": "Roald de Vries <roald@webhtusiast.nl>",
   "license": "MIT",
   "devDependencies": {
+    "autoprefixer": "^5.1.1",
+    "less": "^2.5.1",
     "webcomponents.js": "^0.7.1"
   }
 }
