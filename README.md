@@ -26,6 +26,7 @@ For more details, see [the demo][].
 Caveats
 -------
 
+- In general, the `input`s inside the slider's light DOM are considered internal, so access/modify them only through `time-range-slider` methods
 - To programmatically change the values of the inputs, use e.g. `slider.startValue = slider.parseTime('11:00')`. See [issue 3][] for more details.
 
 [the demo]: http://localhost:8000/demo/
