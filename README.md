@@ -2,9 +2,9 @@ Demo
 ----
 
 	npm install
-	python -m SimpleHTTPServer
+	npm start
 
-... and open [the demo][].
+... and open [the demo](http://localhost:8000/demo/).
 
 Reuse
 -----
@@ -21,7 +21,7 @@ And include like this:
 		<input type="text" name="end" value="18:00">
 	</time-range-slider>
 
-For more details, see [the demo][].
+For more details, see [the demo](./demo/index.html).
 
 Caveats
 -------
@@ -29,5 +29,4 @@ Caveats
 - In general, the `input`s inside the slider's light DOM are considered internal, so access/modify them only through `time-range-slider` methods
 - To programmatically change the values of the inputs, use e.g. `slider.startValue = slider.parseTime('11:00')`. See [issue 3][] for more details.
 
-[the demo]: http://localhost:8000/demo/
 [issue 3]: https://github.com/webthusiast/time-range-slider/issues/3
